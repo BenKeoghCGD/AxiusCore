@@ -1,7 +1,6 @@
 package uk.co.benkeoghcgd.api.AxiusCore.Examples;
 
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.plugin.java.JavaPlugin;
 import uk.co.benkeoghcgd.api.AxiusCore.API.AxiusPlugin;
 import uk.co.benkeoghcgd.api.AxiusCore.API.GUI;
 
@@ -12,7 +11,6 @@ public class ExampleGUI extends GUI {
 
     @Override
     protected void Populate() {
-        container.addItem(//new item//)
     }
 
     @Override

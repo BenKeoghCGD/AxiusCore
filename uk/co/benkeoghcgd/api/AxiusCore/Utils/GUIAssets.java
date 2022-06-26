@@ -2,11 +2,13 @@ package uk.co.benkeoghcgd.api.AxiusCore.Utils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.HashMap;
+import java.util.UUID;
 
 public final class GUIAssets {
     public final static HashMap<Player, ItemStack> PLAYERHEADS = new HashMap<>();
@@ -52,11 +54,23 @@ public final class GUIAssets {
         return head;
     }
 
+    @Deprecated(since = "1.1.0", forRemoval = true)
     public static ItemStack GenHead(String name) {
         ItemStack head = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta sm = (SkullMeta) head.getItemMeta();
         sm.setOwningPlayer(Bukkit.getOfflinePlayer(name));
         sm.setDisplayName(name);
+        head.setItemMeta(sm);
+
+        return head;
+    }
+
+    public static ItemStack GenHead(UUID uuid) {
+        ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+        SkullMeta sm = (SkullMeta) head.getItemMeta();
+        OfflinePlayer p = Bukkit.getOfflinePlayer(uuid);
+        sm.setOwningPlayer(p);
+        sm.setDisplayName(p.getName());
         head.setItemMeta(sm);
 
         return head;

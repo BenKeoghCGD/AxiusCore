@@ -11,6 +11,7 @@ import uk.co.benkeoghcgd.api.AxiusCore.AxiusCore;
 import uk.co.benkeoghcgd.api.AxiusCore.API.Enums.PluginStatus;
 import uk.co.benkeoghcgd.api.AxiusCore.Exceptions.CommandRegisterException;
 import uk.co.benkeoghcgd.api.AxiusCore.Exceptions.InvalidPremiumAuthException;
+import uk.co.benkeoghcgd.api.AxiusCore.Utils.GUIAssets;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -93,6 +94,7 @@ public abstract class AxiusPlugin extends JavaPlugin {
     public void onEnable() {
         core = (AxiusCore) getServer().getPluginManager().getPlugin("AxiusCore");
         Preregister();
+        GUIAssets.generateDecor();
         lastUpdate = System.currentTimeMillis();
         Register();
         Postregister();
