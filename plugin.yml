@@ -1,6 +1,0 @@
-name: AxiusCore
-main: uk.co.benkeoghcgd.api.AxiusCore.AxiusCore
-version: 1.0.0-pre1
-api-version: 1.18
-author: Fubbo
-description: Core functionality for AxiusDevelopment / BenKeoghCGD plugins

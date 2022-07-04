@@ -6,27 +6,37 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
-import uk.co.benkeoghcgd.api.AxiusCore.API.Premium.PremiumLink;
+import uk.co.benkeoghcgd.api.AxiusCore.API.Utilities.PublicPluginData;
 import uk.co.benkeoghcgd.api.AxiusCore.AxiusCore;
 import uk.co.benkeoghcgd.api.AxiusCore.API.Enums.PluginStatus;
 import uk.co.benkeoghcgd.api.AxiusCore.Exceptions.CommandRegisterException;
-import uk.co.benkeoghcgd.api.AxiusCore.Exceptions.InvalidPremiumAuthException;
 import uk.co.benkeoghcgd.api.AxiusCore.Utils.GUIAssets;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AxiusPlugin extends JavaPlugin {
+
+    JavaPlugin instance;
+    public AxiusPlugin() {
+        instance = this;
+    }
+
+
     public List<Command> commands = new ArrayList<>();
     public List<Exception> errors = new ArrayList<>();
     protected PluginStatus status = PluginStatus.RUNNING;
-    protected ItemStack guiIcon;
-    private String nameFormatted;
+
     public AxiusCore core;
     public long lastUpdate = 0L;
     private static CommandMap commandMap;
-    protected PremiumLink premiumData = null;
+
+    // Plugin Data
+    String nameFormatted;
+    ItemStack guiIcon;
+    PublicPluginData ppd = new PublicPluginData();
 
     static {
         try {
@@ -38,9 +48,21 @@ public abstract class AxiusPlugin extends JavaPlugin {
         }
     }
 
+    protected void EnableUpdater(int SpigotResourceID) {
+        ppd.currentPluginVersion = this.getDescription().getVersion();
+        ppd.SpigotResourceID = SpigotResourceID;
+        ppd.isPublicResource = true;
+    }
+
+    public PublicPluginData GetPublicPluginData() {
+        return ppd;
+    }
+    public void SetPublicPluginData(PublicPluginData ppd) { this.ppd = ppd; }
+
     public ItemStack getIcon() {
         return guiIcon;
     }
+    public void setIcon(ItemStack stack) { guiIcon = stack; }
 
     public String getNameFormatted() {
         return nameFormatted;
@@ -76,30 +98,17 @@ public abstract class AxiusPlugin extends JavaPlugin {
      */
     protected abstract void FullStop();
 
-    /**
-     * Checks premium plugin registry and sets up plugin for key registry
-     * @param pluginId A valid plugin ID must be provided, and must match that of the plugin registry
-     */
-    protected boolean PremiumRegister(Integer pluginId) {
-        try {
-            premiumData = new PremiumLink(this, pluginId);
-            return true;
-        } catch (InvalidPremiumAuthException e) {
-            errors.add(e);
-            return false;
-        }
-    }
-
     @Override
     public void onEnable() {
         core = (AxiusCore) getServer().getPluginManager().getPlugin("AxiusCore");
         Preregister();
         GUIAssets.generateDecor();
         lastUpdate = System.currentTimeMillis();
-        Register();
+        if(!core.registerPlugin(this)) return;
         Postregister();
     }
 
+    @Deprecated
     private void Register() {
         core.registerPlugin(this);
     }
@@ -115,15 +124,26 @@ public abstract class AxiusPlugin extends JavaPlugin {
         core.unregisterPlugin(this);
     }
 
-    protected boolean registerCommands() {
+    protected void registerCommands() {
         for(Command c : commands) {
-            if(!commandMap.register(getName(), c)) errors.add(new CommandRegisterException(c));
+            if(!commandMap.register(getName(), c))
+                errors.add(new CommandRegisterException(c));
         }
-        return true;
     }
 
     public PluginStatus pullStatus() {
         return status;
     }
     public void setStatus(PluginStatus newStatus) {status = newStatus;}
+
+    public void refreshStatus() {
+        if(errors.size() == 0) status = PluginStatus.RUNNING;
+        if(errors.size() > 0) status = PluginStatus.OPERATIONAL;
+        if(errors.size() > 5) status = PluginStatus.MALFUNCTIONED;
+    }
+
+
+    public File pluginFile() {
+        return this.getFile();
+    }
 }

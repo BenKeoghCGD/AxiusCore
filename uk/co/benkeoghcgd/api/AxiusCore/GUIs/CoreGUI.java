@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import uk.co.benkeoghcgd.api.AxiusCore.API.AxiusPlugin;
 import uk.co.benkeoghcgd.api.AxiusCore.API.Enums.PluginStatus;
 import uk.co.benkeoghcgd.api.AxiusCore.API.GUI;
 import uk.co.benkeoghcgd.api.AxiusCore.AxiusCore;
@@ -27,6 +28,8 @@ public class CoreGUI extends GUI {
 
     @Override
     protected void Populate() {
+        for(AxiusPlugin plug : AxiusCore.registeredPlugins) plug.refreshStatus();
+
         String vers = ChatColor.translateAlternateColorCodes('&',
                 "&7Plugin Version: &c" + plugin.getDescription().getVersion());
         String apivers = ChatColor.translateAlternateColorCodes('&',

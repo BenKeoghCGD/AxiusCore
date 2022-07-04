@@ -12,10 +12,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
-import uk.co.benkeoghcgd.api.AxiusCore.API.AxiusPlugin;
-import uk.co.benkeoghcgd.api.AxiusCore.AxiusCore;
 
 import java.util.Arrays;
+import java.util.List;
 
 public abstract class GUI implements Listener {
     public Inventory container;
@@ -30,7 +29,7 @@ public abstract class GUI implements Listener {
     /**
      * Embedded class within the existing event.
      * Extends functionality of onInventoryClick
-     * @param e
+     * @param e Standarad inventory click event
      */
     protected abstract void onInvClick(InventoryClickEvent e);
 
@@ -85,6 +84,23 @@ public abstract class GUI implements Listener {
 
     /**
      * Returns an ItemStack object that can then be added to a GUI
+     * @param material base material for the ItemStack to base off
+     * @param name     the final name of the ItemStack
+     * @param lore     the final lore of the ItemStack, can take multiple String objects
+     * @see   ItemStack
+     * @return ItemStack type formatted for GUI use
+     */
+    public static ItemStack createGuiItem(final Material material, final String name, final List<String> lores) {
+        final ItemStack item = new ItemStack(material, 1);
+        final ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(name);
+        meta.setLore(lores);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    /**
+     * Returns an ItemStack object that can then be added to a GUI
      * @param item     old ItemStack for the new ItemStack to base off
      * @param name     the final name of the ItemStack
      * @param lore     the final lore of the ItemStack, can take multiple String objects
@@ -95,6 +111,22 @@ public abstract class GUI implements Listener {
         final ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(name);
         meta.setLore(Arrays.asList(lore));
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    /**
+     * Returns an ItemStack object that can then be added to a GUI
+     * @param item     old ItemStack for the new ItemStack to base off
+     * @param name     the final name of the ItemStack
+     * @param lore     the final lore of the ItemStack, can take multiple String objects
+     * @see   ItemStack
+     * @return ItemStack type formatted for GUI use
+     */
+    public static ItemStack createGuiItem(final ItemStack item, final String name, final List<String> lore) {
+        final ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(name);
+        meta.setLore(lore);
         item.setItemMeta(meta);
         return item;
     }
