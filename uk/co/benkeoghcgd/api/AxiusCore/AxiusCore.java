@@ -1,16 +1,17 @@
 package uk.co.benkeoghcgd.api.AxiusCore;
 
+import org.bstats.bukkit.Metrics;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import uk.co.benkeoghcgd.api.AxiusCore.API.AxiusPlugin;
 import uk.co.benkeoghcgd.api.AxiusCore.API.Enums.PluginStatus;
+import uk.co.benkeoghcgd.api.AxiusCore.API.Enums.VersionFormat;
 import uk.co.benkeoghcgd.api.AxiusCore.API.Utilities.PublicPluginData;
 import uk.co.benkeoghcgd.api.AxiusCore.API.Utilities.Updater;
 import uk.co.benkeoghcgd.api.AxiusCore.Commands.CoreCommand;
 import uk.co.benkeoghcgd.api.AxiusCore.Exceptions.CoreSelfUpdateException;
 import uk.co.benkeoghcgd.api.AxiusCore.Exceptions.MissingDependException;
 import uk.co.benkeoghcgd.api.AxiusCore.Listeners.CommandOverrideListener;
-import uk.co.benkeoghcgd.api.AxiusCore.Metrics.Metrics;
 import uk.co.benkeoghcgd.api.AxiusCore.Utils.Logging;
 
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class AxiusCore extends AxiusPlugin {
     protected void Preregister() {
         Logging.Log("Initializing Core.");
         try {
-            new Updater(this, 102852);
+            new Updater(this, 102852, VersionFormat.MajorMinorPatch, ".");
         } catch (CoreSelfUpdateException e) {
             errors.add(e);
         }

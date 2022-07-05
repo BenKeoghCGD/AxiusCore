@@ -8,6 +8,7 @@ import org.checkerframework.checker.units.qual.C;
 import org.json.JSONException;
 import org.json.JSONObject;
 import uk.co.benkeoghcgd.api.AxiusCore.API.AxiusPlugin;
+import uk.co.benkeoghcgd.api.AxiusCore.API.Enums.VersionFormat;
 import uk.co.benkeoghcgd.api.AxiusCore.AxiusCore;
 import uk.co.benkeoghcgd.api.AxiusCore.Exceptions.CoreSelfUpdateException;
 import uk.co.benkeoghcgd.api.AxiusCore.Utils.Logging;
@@ -38,6 +39,69 @@ public class Updater {
 
         String latestVersion = getVersionString();
         if(!plugin.getDescription().getVersion().equals(latestVersion)) {
+            Logging.Log(plugin, "Hooked plugin: " + plugin.getName() + ", is out of date!. Latest version: " + latestVersion + ", Current version: " + plugin.getDescription().getVersion());
+            if(plugin != core) {
+                Logging.Log(plugin, "Attempting Auto-Update.. (Spigot Resource ID: " + PluginID + ")");
+                int output = SelfInstall();
+                if(output != 1) {
+                    throw new CoreSelfUpdateException("Error while updating.", null);
+                }
+                Logging.Log(plugin, "Auto-Update Successful.");
+            }
+            else {
+                Bukkit.getScheduler().runTaskLater(plugin, ()-> {
+                    Logging.Log(plugin, "Attempting Auto-Update.. (Spigot Resource ID: " + PluginID + ")");
+                    int output = SelfInstall();
+                    if(output != 1) {
+                        Logging.Err("Error while self-updating.");
+                    }
+                    Logging.Log(plugin, "Auto-Update Successful.");
+                }, 1);
+            }
+        }
+        else {
+            Logging.Log(plugin, "Hooked plugin: " + plugin.getName() + ", is up to date.");
+        }
+    }
+    public Updater(AxiusPlugin plugin, int PluginID, VersionFormat format, String versionSeperator) throws CoreSelfUpdateException {
+        this.plugin = plugin;
+        this.PluginID = PluginID;
+        this.core = plugin.core;
+        this.pluginUtils = new PluginUtils();
+
+        int major = -1, minor = -1, patch = -1;
+        int omajor = -1, ominor = -1, opatch = -1;
+
+        String latestVersion = getVersionString();
+        String[] latestParts = latestVersion.split(versionSeperator);
+        String[] oParts = plugin.getDescription().getVersion().split(versionSeperator);
+        switch (format) {
+            case MajorMinorPatch:
+                patch = Integer.parseInt(latestParts[2].replaceAll("\\D", ""));
+                opatch = Integer.parseInt(oParts[2].replaceAll("\\D", ""));
+            case MajorMinor:
+                major = Integer.parseInt(latestParts[0].replaceAll("\\D", ""));
+                minor = Integer.parseInt(latestParts[1].replaceAll("\\D", ""));
+                omajor = Integer.parseInt(oParts[0].replaceAll("\\D", ""));
+                ominor = Integer.parseInt(oParts[1].replaceAll("\\D", ""));
+                break;
+        }
+
+        boolean outdated = false;
+        boolean inDev = false;
+        if(major > omajor) outdated = true;
+        else if(major < omajor) inDev = true;
+        else {
+            if(minor > ominor) outdated = true;
+            else if(minor < ominor) inDev = true;
+            else if(patch != -1 && opatch != -1) {
+                if(patch > opatch) outdated = true;
+                else if (patch < opatch) inDev = true;
+            }
+        }
+
+
+        if(outdated) {
             Logging.Log(plugin, "Hooked plugin: " + plugin.getName() + ", is out of date!. Latest version: " + latestVersion + ", Current version: " + plugin.getDescription().getVersion());
             if(plugin != core) {
                 Logging.Log(plugin, "Attempting Auto-Update.. (Spigot Resource ID: " + PluginID + ")");
