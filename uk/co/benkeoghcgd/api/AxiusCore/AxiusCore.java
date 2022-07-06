@@ -26,6 +26,7 @@ public class AxiusCore extends AxiusPlugin {
     // Instance Getter
     private static AxiusCore instance;
     public static AxiusCore getInstance() {
+        assert instance != null;
         return instance;
     }
 

@@ -5,6 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import uk.co.benkeoghcgd.api.AxiusCore.API.Enums.VersionFormat;
@@ -230,7 +231,11 @@ public abstract class AxiusPlugin extends JavaPlugin {
      */
     @Override
     public void onEnable() {
-        core = AxiusCore.getInstance();
+        Plugin pl = Bukkit.getPluginManager().getPlugin("AxiusCore");
+
+        if(pl == null) return;
+        core = (AxiusCore) pl;
+        assert core != null;
 
         Preregister();
         GUIAssets.generateDecor();
