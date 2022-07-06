@@ -4,7 +4,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Arrays;
 
@@ -13,23 +12,21 @@ public abstract class AxiusCommand extends Command implements CommandExecutor {
     protected AxiusPlugin plugin;
     protected boolean canConsoleRun;
 
+    /**
+     * Constructor providing bulk of default command data;
+     *
+     * @param instance      Plugin Instance
+     * @param canConsoleRun Can the console run this command?
+     * @param name          Command itself, i.e. "core" for /core
+     * @param description   Description of command
+     * @param usage         Usage message
+     * @param aliases       Command aliases, i.e. "c" and "co" for /core
+     */
     public AxiusCommand(AxiusPlugin instance, boolean canConsoleRun, String name, String description, String usage, String... aliases) {
         super(name);
 
         this.canConsoleRun = canConsoleRun;
         plugin = instance;
-
-        setAliases(Arrays.asList(aliases));
-        setUsage(usage);
-        setDescription(description);
-    }
-
-    @Deprecated
-    public AxiusCommand(JavaPlugin instance, boolean canConsoleRun, String name, String description, String usage, String... aliases) {
-        super(name);
-
-        this.canConsoleRun = canConsoleRun;
-        plugin = (AxiusPlugin) instance;
 
         setAliases(Arrays.asList(aliases));
         setUsage(usage);

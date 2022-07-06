@@ -7,49 +7,46 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.ItemStack;
 import uk.co.benkeoghcgd.api.AxiusCore.API.AxiusPlugin;
 import uk.co.benkeoghcgd.api.AxiusCore.API.Enums.PluginStatus;
 import uk.co.benkeoghcgd.api.AxiusCore.API.GUI;
 import uk.co.benkeoghcgd.api.AxiusCore.AxiusCore;
 import uk.co.benkeoghcgd.api.AxiusCore.Utils.GUIAssets;
 
+import java.util.List;
+
 public class CoreGUI extends GUI {
     AxiusCore core;
-
-    ItemStack authorItm;
     String msgStart = ChatColor.translateAlternateColorCodes('&', "&c&lAXIUSCORE&7 ");
 
     public CoreGUI(AxiusCore instance) {
-        super(instance, 1, ChatColor.translateAlternateColorCodes('&', AxiusCore.PREFIX + "Home"));
+        super(instance, 1, ChatColor.translateAlternateColorCodes('&', instance.getNameFormatted() + "Home"));
         core = instance;
         Populate();
     }
 
     @Override
     protected void Populate() {
-        for(AxiusPlugin plug : AxiusCore.registeredPlugins) plug.refreshStatus();
+        // refresh all plugin statuses
+        for(AxiusPlugin plug : core.getRegisteredPlugins()) plug.refreshStatus();
 
-        String vers = ChatColor.translateAlternateColorCodes('&',
-                "&7Plugin Version: &c" + plugin.getDescription().getVersion());
-        String apivers = ChatColor.translateAlternateColorCodes('&',
-                "&7API Version: &c" + plugin.getDescription().getAPIVersion());
-        container.setItem(0, createGuiItem(Material.COMMAND_BLOCK, ChatColor.translateAlternateColorCodes('&', AxiusCore.PREFIX), vers, apivers));
+        // format all titles and lores.
+        String vers = ChatColor.translateAlternateColorCodes('&', "&7Plugin Version: &c" + plugin.getDescription().getVersion());
+        String apivers = ChatColor.translateAlternateColorCodes('&', "&7API Version: &c" + plugin.getDescription().getAPIVersion());
+        String author1 = ChatColor.translateAlternateColorCodes('&', "&7Core developed by &3Fubbo&7.");
+        String author2 = ChatColor.translateAlternateColorCodes('&', "&cRight Click - View Portfolio");
+        String author3 = ChatColor.translateAlternateColorCodes('&', "&aLeft Click - View Other Plugins");
 
-        String author1 = ChatColor.translateAlternateColorCodes('&',
-                "&7Core developed by &3Fubbo&7.");
-        String author2 = ChatColor.translateAlternateColorCodes('&',
-                "&cRight Click - View Portfolio");
-        String author3 = ChatColor.translateAlternateColorCodes('&',
-                "&aLeft Click - View Other Plugins");
-        authorItm = createGuiItem(GUIAssets.DECORHEADS.get("fubbo"), ChatColor.translateAlternateColorCodes('&', "&3&lAUTHOR"), author1, "", author2, author3);
-        container.setItem(8, authorItm);
-
-        String loadedPlugins = ChatColor.translateAlternateColorCodes('&', "&7Plugins Hooked: &c" + core.registeredPlugins.size());
-        int mal = (int) core.registeredPlugins.stream().filter(a -> a.pullStatus() == PluginStatus.MALFUNCTIONED).count();
-        int op = (int) core.registeredPlugins.stream().filter(a -> a.pullStatus() == PluginStatus.OPERATIONAL).count();
-        int run = (int) core.registeredPlugins.stream().filter(a -> a.pullStatus() == PluginStatus.RUNNING).count();
+        List<AxiusPlugin> registeredPlugins = core.getRegisteredPlugins();
+        String loadedPlugins = ChatColor.translateAlternateColorCodes('&', "&7Plugins Hooked: &c" + registeredPlugins.size());
+        int mal = (int) registeredPlugins.stream().filter(a -> a.pullStatus() == PluginStatus.MALFUNCTIONED).count();
+        int op = (int) registeredPlugins.stream().filter(a -> a.pullStatus() == PluginStatus.OPERATIONAL).count();
+        int run = (int) registeredPlugins.stream().filter(a -> a.pullStatus() == PluginStatus.RUNNING).count();
         String statuses = ChatColor.translateAlternateColorCodes('&', "&7Statuses: &a" + run + "&7:&6" + op + "&7:&c" + mal + "&7.");
+
+        // Add generated items to GUI
+        container.setItem(8, createGuiItem(GUIAssets.getDecorHeadCache().get("fubbo"), ChatColor.translateAlternateColorCodes('&', "&3&lAUTHOR"), author1, "", author2, author3));
+        container.setItem(0, createGuiItem(Material.COMMAND_BLOCK, ChatColor.translateAlternateColorCodes('&', core.getNameFormatted()), vers, apivers));
         container.setItem(4, createGuiItem(Material.PAPER, ChatColor.translateAlternateColorCodes('&', "&c&lPLUGINS"), loadedPlugins, statuses));
     }
 

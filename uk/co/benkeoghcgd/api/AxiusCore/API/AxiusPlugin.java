@@ -5,7 +5,9 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import uk.co.benkeoghcgd.api.AxiusCore.API.Enums.VersionFormat;
 import uk.co.benkeoghcgd.api.AxiusCore.API.Utilities.PublicPluginData;
 import uk.co.benkeoghcgd.api.AxiusCore.AxiusCore;
 import uk.co.benkeoghcgd.api.AxiusCore.API.Enums.PluginStatus;
@@ -18,25 +20,42 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AxiusPlugin extends JavaPlugin {
+    /*
+    Plugin Instances
+     */
+    JavaPlugin jpinstance;
+    AxiusPlugin apinstance;
 
-    JavaPlugin instance;
+    /**
+     * Assigns default instance values for getters #getJavaPlugin() and #getAxiusPlugin()
+     */
     public AxiusPlugin() {
-        instance = this;
+        jpinstance = this;
+        apinstance = this;
     }
 
+    /**
+     * Returns the instance of the plugins JavaPlugin
+     *
+     * @return a JavaPlugin of this plugin instance
+     */
+    public JavaPlugin getJavaPlugin() { return jpinstance; }
 
-    public List<Command> commands = new ArrayList<>();
+    /**
+     * Returns the instance of this AxiusPlugin
+     *
+     * @return returns itself
+     */
+    public AxiusPlugin getAxiusPlugin() { return apinstance; }
+    public File pluginFile() { return this.getFile(); }
+
+
+
+    /*
+    Variables
+     */
+    protected List<Command> commands = new ArrayList<>();
     public List<Exception> errors = new ArrayList<>();
-    protected PluginStatus status = PluginStatus.RUNNING;
-
-    public AxiusCore core;
-    public long lastUpdate = 0L;
-    private static CommandMap commandMap;
-
-    // Plugin Data
-    String nameFormatted;
-    ItemStack guiIcon;
-    PublicPluginData ppd = new PublicPluginData();
 
     static {
         try {
@@ -48,30 +67,126 @@ public abstract class AxiusPlugin extends JavaPlugin {
         }
     }
 
-    protected void EnableUpdater(int SpigotResourceID) {
-        ppd.currentPluginVersion = this.getDescription().getVersion();
-        ppd.SpigotResourceID = SpigotResourceID;
-        ppd.isPublicResource = true;
+    protected AxiusCore core;
+    private static CommandMap commandMap;
+
+
+
+    /*
+    Plugin Status
+     */
+    public PluginStatus status = PluginStatus.RUNNING;
+
+    /**
+     * Retrieve the plugin status
+     *
+     * @return the current PluginStatus
+     */
+    public PluginStatus pullStatus() { return status; }
+
+    /**
+     * Set the plugin status
+     *
+     * @param newStatus the new status for the plugin
+     */
+    public void setStatus(PluginStatus newStatus) {status = newStatus;}
+
+    /**
+     * Refresh the current plugin status based on amount of errors.
+     * This function can be overriden to provide custom status checking
+     */
+    public void refreshStatus() {
+        if(errors.size() == 0) status = PluginStatus.RUNNING;
+        if(errors.size() > 0) status = PluginStatus.OPERATIONAL;
+        if(errors.size() > 5) status = PluginStatus.MALFUNCTIONED;
     }
 
-    public PublicPluginData GetPublicPluginData() {
-        return ppd;
-    }
+
+
+    /*
+    Public Plugin Data
+     */
+    PublicPluginData ppd = new PublicPluginData();
+
+    /**
+     * Get the public plugin data type from an AxiusPlugin
+     *
+     * @return instances PublicPluginData type
+     * @see PublicPluginData
+     */
+    public PublicPluginData GetPublicPluginData() { return ppd; }
+
+    /**
+     * Set the public plugin data type for an AxiusPlugin
+     *
+     * @param ppd new PublicPluginData type to replace current
+     */
     public void SetPublicPluginData(PublicPluginData ppd) { this.ppd = ppd; }
 
-    public ItemStack getIcon() {
-        return guiIcon;
+    /**
+     * Enable Auto-updating with your AxiusPlugin, through Spigot
+     *
+     * @param SpigotResourceID Resource ID from your uploaded Spigot resource
+     */
+    protected void EnableUpdater(int SpigotResourceID) {
+        ppd.setSpigotResourceID(SpigotResourceID);
+        ppd.setPublicStatus(true);
     }
+
+    /**
+     * Enable Auto-updating with your AxiusPlugin, through Spigot
+     *
+     * @param SpigotResourceID Resource ID from your uploaded Spigot resource
+     */
+    protected void EnableUpdater(int SpigotResourceID, VersionFormat versionFormat, String versionSeperator) {
+        ppd.setSpigotResourceID(SpigotResourceID);
+        ppd.setPublicStatus(true);
+        ppd.setVersionFormat(versionFormat);
+        ppd.setVersionSeperator(versionSeperator);
+    }
+
+
+
+    /*
+    Cosmetic Changes
+     */
+    String nameFormatted;
+    ItemStack guiIcon;
+
+    /**
+     * Get the formatted name of this AxiusPlugin
+     *
+     * @return a color translated message prefix
+     */
+    public String getNameFormatted() { return nameFormatted; }
+
+    /**
+     * Set the formatted name of this AxiusPlugin
+     * ALLOWS FORMATTING USING '&' COLOR CODES
+     *
+     * @param name the raw string for the prefix
+     */
+    protected void setFormattedName(String name) { nameFormatted = ChatColor.translateAlternateColorCodes('&', name); }
+
+    /**
+     * Get the plugin Icon as an ItemStack
+     *
+     * @return returns the ItemStack type set as the Icon in plugin post-registry
+     */
+    public ItemStack getIcon() { return guiIcon; }
+
+    /**
+     * Set the plugin Icon using an ItemStack
+     *
+     * @param stack The new ItemStack to set as the plugin Icon
+     */
     public void setIcon(ItemStack stack) { guiIcon = stack; }
 
-    public String getNameFormatted() {
-        return nameFormatted;
-    }
 
-    protected void setFormattedName(String name) {
-        nameFormatted = ChatColor.translateAlternateColorCodes('&', name);
-    }
 
+    /*
+    Functionality and Mechanics
+     */
     /**
      * Intermittent function that runs before the plugin self-registers to the core.
      * Should be overriden to implement pre-registry tasks like command generation
@@ -98,32 +213,9 @@ public abstract class AxiusPlugin extends JavaPlugin {
      */
     protected abstract void FullStop();
 
-    @Override
-    public void onEnable() {
-        core = (AxiusCore) getServer().getPluginManager().getPlugin("AxiusCore");
-        Preregister();
-        GUIAssets.generateDecor();
-        lastUpdate = System.currentTimeMillis();
-        if(!core.registerPlugin(this)) return;
-        Postregister();
-    }
-
-    @Deprecated
-    private void Register() {
-        core.registerPlugin(this);
-    }
-
-    @Override
-    public void onDisable() {
-        Stop();
-        Unregister();
-        FullStop();
-    }
-
-    private void Unregister() {
-        core.unregisterPlugin(this);
-    }
-
+    /**
+     * Register all commands from "commands" list to the command map.
+     */
     protected void registerCommands() {
         for(Command c : commands) {
             if(!commandMap.register(getName(), c))
@@ -131,19 +223,25 @@ public abstract class AxiusPlugin extends JavaPlugin {
         }
     }
 
-    public PluginStatus pullStatus() {
-        return status;
+
+
+    /*
+    JavaPlugin requirements
+     */
+    @Override
+    public void onEnable() {
+        core = AxiusCore.getInstance();
+
+        Preregister();
+        GUIAssets.generateDecor();
+        if(!core.registerPlugin(this)) return;
+        Postregister();
     }
-    public void setStatus(PluginStatus newStatus) {status = newStatus;}
 
-    public void refreshStatus() {
-        if(errors.size() == 0) status = PluginStatus.RUNNING;
-        if(errors.size() > 0) status = PluginStatus.OPERATIONAL;
-        if(errors.size() > 5) status = PluginStatus.MALFUNCTIONED;
-    }
-
-
-    public File pluginFile() {
-        return this.getFile();
+    @Override
+    public void onDisable() {
+        Stop();
+        core.unregisterPlugin(this);
+        FullStop();
     }
 }

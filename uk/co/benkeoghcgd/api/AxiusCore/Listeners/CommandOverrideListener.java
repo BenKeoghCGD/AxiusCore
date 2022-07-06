@@ -1,6 +1,5 @@
 package uk.co.benkeoghcgd.api.AxiusCore.Listeners;
 
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -23,41 +22,32 @@ public class CommandOverrideListener implements Listener {
         String[] args = e.getMessage().split(" ");
         String command = args[0];
 
-        switch(command.toLowerCase()) {
-            case "/pl":
-            case "/plugins":
+        switch (command.toLowerCase()) {
+            case "/pl", "/plugins" -> {
                 e.setCancelled(true);
-
-                // very rudimentary, will be updated at some point
-                boolean all;
-                if (args.length == 1) all = true;
-                else all = false;
-
-                if(e.getPlayer().hasPermission("AxiusCore.Plugins")) showPlugins(e.getPlayer(), all);
-                else e.getPlayer().sendMessage(plugin.PREFIX + "You dont have permission to view the plugin list.");
-                break;
-
+                if (e.getPlayer().hasPermission("AxiusCore.Plugins")) showPlugins(e.getPlayer(), args.length == 1);
+                else
+                    e.getPlayer().sendMessage(plugin.getNameFormatted() + "You dont have permission to view the plugin list.");
+            }
         }
     }
 
     // Override for /plugins
-    //              /pl
-
     public void showPlugins(Player sndr, boolean all) {
-        sndr.sendMessage(plugin.PREFIX + "Plugin List (" + (all ? "ALL" : "REGISTERED") + ")");
-        String registered = "";
-        String all2 = "";
+        sndr.sendMessage(plugin.getNameFormatted() + "Plugin List (" + (all ? "ALL" : "REGISTERED") + ")");
+        StringBuilder registered = new StringBuilder();
+        StringBuilder all2 = new StringBuilder();
 
         boolean first = true;
         for(Plugin plug : plugin.getServer().getPluginManager().getPlugins()) {
             if(plug instanceof AxiusPlugin) {
-                if(registered == "") first = true;
-                if(AxiusCore.registeredPlugins.contains((AxiusPlugin) plug)) registered += (first ? "" : "§7, ") + "§a§l" + plug.getName();
-                else registered += (first ? "" : "§7, ") + "§c§l" + plug.getName();
+                if(registered.toString().equals("")) first = true;
+                if(plugin.getRegisteredPlugins().contains((AxiusPlugin) plug)) registered.append(first ? "" : "§7, ").append("§a§l").append(plug.getName());
+                else registered.append(first ? "" : "§7, ").append("§c§l").append(plug.getName());
             }
             else {
-                if(all2 == "") first = true;
-                all2 += (first ? "" : "§7, ") + "§a" + plug.getName();
+                if(all2.toString().equals("")) first = true;
+                all2.append(first ? "" : "§7, ").append("§a").append(plug.getName());
             }
             first = false;
         }

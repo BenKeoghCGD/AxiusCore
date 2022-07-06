@@ -29,6 +29,7 @@ public abstract class GUI implements Listener {
     /**
      * Embedded class within the existing event.
      * Extends functionality of onInventoryClick
+     *
      * @param e Standarad inventory click event
      */
     protected abstract void onInvClick(InventoryClickEvent e);
@@ -36,10 +37,12 @@ public abstract class GUI implements Listener {
     /**
      * Constructor for GUI elements.
      * Providing these parameters creates an Inventory type called container which is the basis of the class
-     * @param instance
-     * @param rows
-     * @param title
-     * @see Inventory
+     *
+     * @param instance JavaPlugin instance of the AxiusPlugin
+     * @param rows number of rows in GUI
+     * @param title GUI title
+     *
+     * @see Inventory to see how to interact with the generated container.
      */
     public GUI(JavaPlugin instance, int rows, String title) {
         plugin = instance;
@@ -52,10 +55,12 @@ public abstract class GUI implements Listener {
     /**
      * Constructor for GUI elements.
      * Providing these parameters creates an Inventory type called container which is the basis of the class
-     * @param instance
-     * @param rows
-     * @param title
-     * @see Inventory
+     *
+     * @param instance AxiusPlugin instance
+     * @param rows number of rows in GUI
+     * @param title GUI title
+     *
+     * @see Inventory to see how to interact with the generated container
      */
     public GUI(AxiusPlugin instance, int rows, String title) {
         plugin = instance;
@@ -67,15 +72,17 @@ public abstract class GUI implements Listener {
 
     /**
      * Returns an ItemStack object that can then be added to a GUI
+     *
      * @param material base material for the ItemStack to base off
      * @param name     the final name of the ItemStack
      * @param lore     the final lore of the ItemStack, can take multiple String objects
-     * @see   ItemStack
+     *
      * @return ItemStack type formatted for GUI use
      */
     public static ItemStack createGuiItem(final Material material, final String name, final String... lore) {
         final ItemStack item = new ItemStack(material, 1);
         final ItemMeta meta = item.getItemMeta();
+        assert meta != null;
         meta.setDisplayName(name);
         meta.setLore(Arrays.asList(lore));
         item.setItemMeta(meta);
@@ -84,15 +91,17 @@ public abstract class GUI implements Listener {
 
     /**
      * Returns an ItemStack object that can then be added to a GUI
+     *
      * @param material base material for the ItemStack to base off
      * @param name     the final name of the ItemStack
-     * @param lore     the final lore of the ItemStack, can take multiple String objects
-     * @see   ItemStack
+     * @param lores    the final lores of the ItemStack as a string list
+     *
      * @return ItemStack type formatted for GUI use
      */
     public static ItemStack createGuiItem(final Material material, final String name, final List<String> lores) {
         final ItemStack item = new ItemStack(material, 1);
         final ItemMeta meta = item.getItemMeta();
+        assert meta != null;
         meta.setDisplayName(name);
         meta.setLore(lores);
         item.setItemMeta(meta);
@@ -101,14 +110,16 @@ public abstract class GUI implements Listener {
 
     /**
      * Returns an ItemStack object that can then be added to a GUI
+     *
      * @param item     old ItemStack for the new ItemStack to base off
      * @param name     the final name of the ItemStack
      * @param lore     the final lore of the ItemStack, can take multiple String objects
-     * @see   ItemStack
+     *
      * @return ItemStack type formatted for GUI use
      */
     public static ItemStack createGuiItem(final ItemStack item, final String name, final String... lore) {
         final ItemMeta meta = item.getItemMeta();
+        assert meta != null;
         meta.setDisplayName(name);
         meta.setLore(Arrays.asList(lore));
         item.setItemMeta(meta);
@@ -117,20 +128,27 @@ public abstract class GUI implements Listener {
 
     /**
      * Returns an ItemStack object that can then be added to a GUI
+     *
      * @param item     old ItemStack for the new ItemStack to base off
      * @param name     the final name of the ItemStack
      * @param lore     the final lore of the ItemStack, can take multiple String objects
-     * @see   ItemStack
+     *
      * @return ItemStack type formatted for GUI use
      */
     public static ItemStack createGuiItem(final ItemStack item, final String name, final List<String> lore) {
         final ItemMeta meta = item.getItemMeta();
+        assert meta != null;
         meta.setDisplayName(name);
         meta.setLore(lore);
         item.setItemMeta(meta);
         return item;
     }
 
+    /**
+     * Inventory Click Event which performs basic click checks
+     *
+     * @param e InventoryClickEvent
+     */
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryClick(InventoryClickEvent e) {
         if(!e.getInventory().equals(container)) return;
@@ -139,6 +157,11 @@ public abstract class GUI implements Listener {
         onInvClick(e);
     }
 
+    /**
+     * Inventory Drag Event which performs basic drag checks
+     *
+     * @param e InventoryClickEvent
+     */
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryDrag(final InventoryDragEvent e) {
         if(e.getInventory().equals(container)) e.setCancelled(true);
