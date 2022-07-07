@@ -56,8 +56,12 @@ If you wish to use AxiusCore as the base of your plugin, add my maven repository
 ```
 
 ### Non-Maven
-What are you doing! maven
+What are you doing! Maven is a really useful resource for us developers :)
+Now you've been told, you'll either convert your project to Maven pronto or add the AxiusCore plugin as a library in your IDE
 
 ### Prerequisites
 Make sure you're using `Java 17` and load your server as usual. Check console for any errors before developing with the downloaded build.
 If all steps have been followed correctly, your server should boot up normally; This is when you can begin development.
+
+## Usage
+For usage information, see [the wiki](https://github.com/BenKeoghCGD/AxiusCore/wiki).
