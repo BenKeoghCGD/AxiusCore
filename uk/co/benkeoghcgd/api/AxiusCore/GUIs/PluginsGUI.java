@@ -10,8 +10,8 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import uk.co.benkeoghcgd.api.AxiusCore.API.AxiusPlugin;
-import uk.co.benkeoghcgd.api.AxiusCore.API.GUI;
-import uk.co.benkeoghcgd.api.AxiusCore.API.Utilities.PublicPluginData;
+import uk.co.benkeoghcgd.api.AxiusCore.API.Utilities.GUI;
+import uk.co.benkeoghcgd.api.AxiusCore.API.PluginData.PublicPluginData;
 import uk.co.benkeoghcgd.api.AxiusCore.AxiusCore;
 import uk.co.benkeoghcgd.api.AxiusCore.Utils.GUIAssets;
 
@@ -47,10 +47,10 @@ class PluginsGUI extends GUI {
             if(ppd.getPublicStatus()) {
                 lores.add("");
                 lores.add("§a§lPUBLIC PLUGIN");
-                lores.add("§7Plugin ID: §a" + ppd.getSpigotResourceID());
+                lores.add("§7Plugin ID: §a" + ppd.getSpigotID());
             }
             lores.add("");
-            lores.add("§aLeft-Click to view info.");
+            if(plug.GetPluginInfoData() != null && !plug.GetPluginInfoData().getButtons().isEmpty()) lores.add("§aLeft-Click to view info.");
             lores.add("§cRight-Click to view error list");
 
             if(ppd.getPublicStatus()) lores.add("§a§lSHIFT + Left-Click to view Spigot page");
@@ -96,7 +96,10 @@ class PluginsGUI extends GUI {
             }
 
             if(e.getClick() == ClickType.LEFT) {
-                // Plugin info
+                if(plug.GetPluginInfoData() == null) return;
+                e.getWhoClicked().closeInventory();
+                PluginInfoGUI pig = new PluginInfoGUI(instance, plug);
+                pig.show(((Player) e.getWhoClicked()));
                 return;
             }
 
@@ -106,13 +109,12 @@ class PluginsGUI extends GUI {
             }
 
             if(e.getClick() == ClickType.SHIFT_LEFT) {
-
                 if(plug.GetPublicPluginData().getPublicStatus()) {
                     TextComponent First = new TextComponent("§c§lAxiusCore§7 Click ");
                     TextComponent btn = new TextComponent("§cHERE");
 
                     btn.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("§7 This is a direct link to §6spigotmc.org§7.")));
-                    btn.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.spigotmc.org/resources/" + plug.GetPublicPluginData().getSpigotResourceID() + "/"));
+                    btn.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.spigotmc.org/resources/" + plug.GetPublicPluginData().getSpigotID() + "/"));
 
                     TextComponent last = new TextComponent("§7to view the Spigot page for " + plug.getName() + ".");
 

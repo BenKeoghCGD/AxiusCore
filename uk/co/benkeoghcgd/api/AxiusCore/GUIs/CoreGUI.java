@@ -9,7 +9,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import uk.co.benkeoghcgd.api.AxiusCore.API.AxiusPlugin;
 import uk.co.benkeoghcgd.api.AxiusCore.API.Enums.PluginStatus;
-import uk.co.benkeoghcgd.api.AxiusCore.API.GUI;
+import uk.co.benkeoghcgd.api.AxiusCore.API.Utilities.GUI;
 import uk.co.benkeoghcgd.api.AxiusCore.AxiusCore;
 import uk.co.benkeoghcgd.api.AxiusCore.Utils.GUIAssets;
 

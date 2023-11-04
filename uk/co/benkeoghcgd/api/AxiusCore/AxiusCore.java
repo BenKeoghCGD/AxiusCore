@@ -2,29 +2,51 @@ package uk.co.benkeoghcgd.api.AxiusCore;
 
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Material;
-import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.ServicePriority;
+import org.bukkit.entity.Player;
+import uk.co.benkeoghcgd.api.AxiusCore.API.AxiusPlayer;
 import uk.co.benkeoghcgd.api.AxiusCore.API.AxiusPlugin;
 import uk.co.benkeoghcgd.api.AxiusCore.API.Enums.PluginStatus;
-import uk.co.benkeoghcgd.api.AxiusCore.API.Enums.VersionFormat;
-import uk.co.benkeoghcgd.api.AxiusCore.API.Utilities.PublicPluginData;
-import uk.co.benkeoghcgd.api.AxiusCore.API.Utilities.Updater;
+import uk.co.benkeoghcgd.api.AxiusCore.API.Enums.UpdaterMethod;
+import uk.co.benkeoghcgd.api.AxiusCore.API.PluginData.PluginInfoData;
+import uk.co.benkeoghcgd.api.AxiusCore.API.PluginData.PublicPluginData;
+import uk.co.benkeoghcgd.api.AxiusCore.API.Updating.*;
 import uk.co.benkeoghcgd.api.AxiusCore.Commands.CoreCommand;
+import uk.co.benkeoghcgd.api.AxiusCore.Commands.StreamerCommand;
 import uk.co.benkeoghcgd.api.AxiusCore.DataHandlers.ConfigYML;
-import uk.co.benkeoghcgd.api.AxiusCore.Exceptions.CoreSelfUpdateException;
-import uk.co.benkeoghcgd.api.AxiusCore.Exceptions.MissingDependException;
+import uk.co.benkeoghcgd.api.AxiusCore.API.Exceptions.MissingDependException;
 import uk.co.benkeoghcgd.api.AxiusCore.Listeners.CommandOverrideListener;
+import uk.co.benkeoghcgd.api.AxiusCore.Listeners.JoinLeaveListener;
 import uk.co.benkeoghcgd.api.AxiusCore.Utils.Logging;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
-import static uk.co.benkeoghcgd.api.AxiusCore.API.GUI.createGuiItem;
+import static uk.co.benkeoghcgd.api.AxiusCore.API.Utilities.GUI.createGuiItem;
 
 public class AxiusCore extends AxiusPlugin {
 
     // Instance Getter
     private static AxiusCore instance;
+    private static boolean PushLocale = false;
+    private static List<AxiusPlayer> player_pool = new ArrayList<>();
+
+    public static void addPlayer(Player p) {
+        player_pool.add(new AxiusPlayer(p));
+    }
+
+    public static void removePlayer(AxiusPlayer p) {
+        player_pool.remove(p);
+    }
+
+    public static List<AxiusPlayer> getCurrentPlayers() {
+        return player_pool;
+    }
+
+
     public static AxiusCore getInstance() {
         assert instance != null;
         return instance;
@@ -46,19 +68,40 @@ public class AxiusCore extends AxiusPlugin {
 
     @Override
     protected void Preregister() {
+        CheckLocale();
+
         Logging.Log("Initializing Core.");
-        EnableUpdater(102852, VersionFormat.MajorMinorPatch, "\\.");
-        // Register new updater for AxiusCore
+        PublicPluginData ppd = new PublicPluginData();
+        PluginInfoData pid = new PluginInfoData();
+
+        ppd.setPublicStatus(true);
+        ppd.setUpdaterMethod(UpdaterMethod.SPIGOT);
+        ppd.setSpigotID(102852);
+        ppd.setVersionSeparator(".");
+
+        SetPublicPluginData(ppd);
+
 
         Logging.Log("Readying metrics.");
         new Metrics(this, 15561);
 
         Logging.Log("Collecting commands.");
         commands.add(new CoreCommand(this));
+        commands.add(new StreamerCommand(this));
 
         Logging.Log("Registering data files.");
-        ConfigYML cyml = new ConfigYML(this);
-        autoUpdate = (boolean) cyml.data.get("autoUpdatePlugins");
+        ConfigYML configYML = new ConfigYML(this);
+        autoUpdate = (boolean) configYML.data.get("autoUpdatePlugins");
+    }
+
+    private void CheckLocale() {
+        Locale locale = Locale.getDefault();
+        if(!locale.getLanguage().equalsIgnoreCase("en")) {
+                Logging.Log("Hey! I notice you're not from a natively English speaking country!");
+                Logging.Log("Our plugins are actively looking translation into multiple other languages,");
+                Logging.Log("and could really do with your help!! Please join the discord page located on");
+                Logging.Log("our Spigot page! https://www.spigotmc.org/resources/axiuscore.102852/");
+        }
     }
 
     @Override
@@ -71,6 +114,7 @@ public class AxiusCore extends AxiusPlugin {
 
         Logging.Log("Overriding default commands.");
         getServer().getPluginManager().registerEvents(new CommandOverrideListener(this), this);
+        getServer().getPluginManager().registerEvents(new JoinLeaveListener(), this);
     }
 
     @Override
@@ -90,19 +134,29 @@ public class AxiusCore extends AxiusPlugin {
 
         Logging.Log("Checking Hook Data: Public Resource Checks");
         PublicPluginData _ppd = plugin.GetPublicPluginData();
-        if(_ppd.getPublicStatus()) {
+        if(_ppd != null && _ppd.getPublicStatus()) {
             Logging.Log("Public Resource: Plugin is public resource, adding Updater");
 
-            try {
-                if(!_ppd.getVersionFormat().equals(VersionFormat.NULL)) new Updater(plugin, _ppd.getSpigotResourceID(), _ppd.getVersionFormat(), _ppd.getVersionSeperator());
-                else new Updater(plugin, _ppd.getSpigotResourceID());
-            } catch (CoreSelfUpdateException e) {
-                Logging.Err("Hook request from " + plugin.getName() + " failed: " + e.getMessage());
-                return false;
-            }
+            Updater upd = null;
 
-            if(_ppd.getRegisterStatus()) {
-                Logging.Log("Public Resource: Added Updater");
+            if(_ppd.getUpdaterMethod() != UpdaterMethod.NO_UPDATE) {
+                switch (_ppd.getUpdaterMethod()) {
+                    case SPIGOT -> {
+                        if(_ppd.getSpigotID() == Integer.MAX_VALUE) break;
+                        if(_ppd.getVersionSeparator() != null) upd = new SpigotUpdaterMMP(plugin, _ppd.getSpigotID());
+                        else upd = new SpigotUpdater(plugin, _ppd.getSpigotID());
+                    }
+
+                    case MAVEN -> {
+                        if(_ppd.getMavenRepository() == null) break;
+                        if(_ppd.getVersionSeparator() != null) upd = new MavenUpdaterMMP(plugin, _ppd.getMavenRepository());
+                        else upd = new MavenUpdater(plugin, _ppd.getMavenRepository());
+                    }
+                }
+
+                if(_ppd.getRegisterStatus() && upd != null) {
+                    Logging.Log("Public Resource: Added Updater");
+                }
             }
         }
 
@@ -134,13 +188,8 @@ public class AxiusCore extends AxiusPlugin {
     /**
      * Removes your AxiusPlugin's hook from AxiusCore
      * @param plugin Plugin instance which is to be removed
-     * @return returns false in the event the plugin registry contains no instance of your AxiusPlugin
      */
-    public boolean unregisterPlugin(AxiusPlugin plugin) {
-        if(registeredPlugins.contains(plugin)) {
-            registeredPlugins.remove(plugin);
-            return true;
-        }
-        return false;
+    public void unregisterPlugin(AxiusPlugin plugin) {
+        registeredPlugins.remove(plugin);
     }
 }

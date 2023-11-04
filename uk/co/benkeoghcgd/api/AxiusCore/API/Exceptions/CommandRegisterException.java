@@ -1,4 +1,4 @@
-package uk.co.benkeoghcgd.api.AxiusCore.Exceptions;
+package uk.co.benkeoghcgd.api.AxiusCore.API.Exceptions;
 
 import org.bukkit.command.Command;
 

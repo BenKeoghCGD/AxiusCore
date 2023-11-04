@@ -40,7 +40,7 @@ public abstract class AxiusCommand extends Command implements CommandExecutor {
             return false;
         }
 
-        if(getPermission() != null && !sndr.hasPermission(getPermission())) {
+        if(getPermission() != null && !getPermission().equalsIgnoreCase("null") && !sndr.hasPermission(getPermission())) {
             sndr.sendMessage(plugin.getNameFormatted() + "§c You don't have permission to run this command.");
             return false;
         }
